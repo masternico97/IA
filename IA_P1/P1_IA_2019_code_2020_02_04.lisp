@@ -14,11 +14,11 @@
 
     OUTPUT: estimation of the zero of f, NIL if not converged"
 
-  (unless (= max-iter 0) 
+  (unless (or (= max-iter 0) (< (abs (funcall df-dx x0)) 0.0001))
     (let ((x (- x0 (/ (funcall f x0) (funcall df-dx x0)))))
       (if (< (abs (- x x0)) tol-abs) 
         x
-        (newton (f df-dx (- max-iter 1) x0 tol-abs))))))
+        (newton f df-dx (- max-iter 1) x tol-abs)))))
 
 
 
@@ -38,8 +38,8 @@
 
 
     OUTPUT: list of estimations of the zeros of f"
-  )
-
+  (mapcar #'(lambda (x) (newton f df-dx max-iter x tol-abs)) seeds))
+  
 
 
 
@@ -59,9 +59,25 @@
     OUTPUT: list of pairs, such that 
                the first element of the pair is elt. 
                the second element is an element from lst"
- ) 
+  (mapcar #'(lambda(x) (list elt x)) lst)) 
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defun combine-lst-lst (lst1 lst2)
+  "Calculate the cartesian product of two lists
+
+
+    INPUT:  lst1: list 
+            lst2: list 
+
+
+    OUTPUT: list of pairs, of the cartesian product"
+  (mapcar #'(lambda(x) (combine-elt-lst x lst2)) lst1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 (defun combine-list-of-lsts (lolsts)
   "Combinations of N elements, each of wich
 
