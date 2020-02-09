@@ -138,7 +138,7 @@ ________________
 
 
     OUTPUT: euclidean distance between x and y"
-  (sqrt (reduce #'+ (mapcar (lambda (c) (* c c)) (mapcar #'(lambda (a b) (- b a)) x y)))))
+  (sqrt (reduce #'+ (mapcar #'(lambda (c) (* c c)) (mapcar #'(lambda (a b) (- b a)) x y)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -204,8 +204,16 @@ ________________
      
      NOTES: 
         * Uses remove-if and sort"
-  
-  )
+  (sort
+    (remove-if #'(lambda (y) (= y NIL))
+      (mapcar #'(lambda (x)
+        (let 
+          ((similarity (funcall similarity-fn x test-vector)))
+          (unless (< similarity threshold)
+            (list x similarity)))) lst-vectors))
+    #'(lambda(x y) (< (abs x) (abs y)))
+      :key #'second)
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
