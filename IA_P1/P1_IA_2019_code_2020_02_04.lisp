@@ -106,7 +106,7 @@
 
    NOTES: 
         * Implemented with mapcar"
-  )
+  (reduce #'+ (mapcar #'(lambda (a b) (* a b)) x y)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -120,7 +120,7 @@
 
 
     OUTPUT: euclidean norm of x"
-)
+(sqrt (reduce #'+ (mapcar #'(lambda (a) (* a a)) x))))
 
 
 ________________
@@ -138,7 +138,7 @@ ________________
 
 
     OUTPUT: euclidean distance between x and y"
-  )
+  (sqrt (reduce #'+ (mapcar (lambda (c) (* c c)) (mapcar #'(lambda (a b) (- b a)) x y)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -159,7 +159,9 @@ ________________
        * Evaluates to NIL (not defined)
          if at least one of the vectors has zero norm.
        * The two vectors are assumed to have the same length"
-  )
+  (if (or (= (length x) 0)  (= (length y) 0))
+    NIL
+    (/ (scalar-product x y) (* (euclidean-norm x) (euclidean-norm y)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,8 +181,7 @@ ________________
         if at least one of the vectors has zero norm.
       * The two vectors are assumed to have the same length"
 
-
-  )
+  (/ (/ 1 (cosine-similarity x y)) pi))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; select-vectors
 
