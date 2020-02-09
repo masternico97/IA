@@ -159,8 +159,7 @@ ________________
        * Evaluates to NIL (not defined)
          if at least one of the vectors has zero norm.
        * The two vectors are assumed to have the same length"
-  (if (or (= (length x) 0)  (= (length y) 0))
-    NIL
+  (unless (or (= (length x) 0)  (= (length y) 0))
     (/ (scalar-product x y) (* (euclidean-norm x) (euclidean-norm y)))))
 
 
@@ -180,8 +179,8 @@ ________________
       * Evaluates to NIL (not well defined)
         if at least one of the vectors has zero norm.
       * The two vectors are assumed to have the same length"
-
-  (/ (/ 1 (cosine-similarity x y)) pi))
+  (unless (or (= (length x) 0)  (= (length y) 0))
+  (/ (acos (cosine-similarity x y)) pi)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; select-vectors
 
