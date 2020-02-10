@@ -159,7 +159,7 @@ ________________
        * Evaluates to NIL (not defined)
          if at least one of the vectors has zero norm.
        * The two vectors are assumed to have the same length"
-  (unless (or (= (length x) 0)  (= (length y) 0))
+  (unless (or (equal x '())  (equal y '()))
     (/ (scalar-product x y) (* (euclidean-norm x) (euclidean-norm y)))))
 
 
@@ -179,7 +179,7 @@ ________________
       * Evaluates to NIL (not well defined)
         if at least one of the vectors has zero norm.
       * The two vectors are assumed to have the same length"
-  (unless (or (= (length x) 0)  (= (length y) 0))
+  (unless (or (equal x '())  (equal y '()))
   (/ (acos (cosine-similarity x y)) pi)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; select-vectors
@@ -204,7 +204,7 @@ ________________
      
      NOTES: 
         * Uses remove-if and sort"
-  (unless (or (= (length lst-vectors) 0)  (= (length test-vector) 0))
+  (unless (or (equal lst-vectors '())  (equal test-vector '()))
     (sort
       (remove-if #'(lambda (y) (equal y NIL))
         (mapcar #'(lambda (x)
