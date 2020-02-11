@@ -91,7 +91,7 @@
                  ...
                  the Nth element is from list N"
   
-  )
+)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -159,7 +159,7 @@ ________________
        * Evaluates to NIL (not defined)
          if at least one of the vectors has zero norm.
        * The two vectors are assumed to have the same length"
-  (unless (or (equal x '())  (equal y '()))
+  (unless (or (null x)  (null y))
     (/ (scalar-product x y) (* (euclidean-norm x) (euclidean-norm y)))))
 
 
@@ -179,7 +179,7 @@ ________________
       * Evaluates to NIL (not well defined)
         if at least one of the vectors has zero norm.
       * The two vectors are assumed to have the same length"
-  (unless (or (equal x '())  (equal y '()))
+  (unless (or (null x)  (null y))
   (/ (acos (cosine-similarity x y)) pi)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; select-vectors
@@ -204,9 +204,9 @@ ________________
      
      NOTES: 
         * Uses remove-if and sort"
-  (unless (or (equal lst-vectors '())  (equal test-vector '()))
+  (unless (or (null lst-vectors)  (null test-vector))
     (sort
-      (remove-if #'(lambda (y) (equal y NIL))
+      (remove-if #'(lambda (y) (null y))
         (mapcar #'(lambda (x)
           (let 
             ((similarity (funcall similarity-fn x test-vector)))
@@ -216,7 +216,7 @@ ________________
         :key #'second)))
 
 
-
+ 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -241,7 +241,20 @@ ________________
       * The implementation is recursive
       * It ignores the vectors in lst-vectors for which the 
         distance value cannot be computed."
-  )
+   (unless (or (null lst-vectors)  (null test-vector))
+    (first (sort (
+    		(remove-if #'(lambda (y) (null y))
+				(list 
+					(let ((distance (funcall distance-fn lst-vectors test-vector) ))
+					)
+				)
+			)
+    	) 
+    	
+    	#'(lambda(a b) (< (abs a) (abs b))) :key #'second
+    ))
+   )
+)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
