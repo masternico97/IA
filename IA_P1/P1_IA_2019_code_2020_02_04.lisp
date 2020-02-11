@@ -222,6 +222,8 @@ ________________
 
 ________________
 
+;;PREGUNTA: ¿asumimos que los vectores de la lista son de la misma longitud? Si no, ¿que hacemos?
+
 
 (defun nearest-neighbor (lst-vectors test-vector distance-fn)
   "Selects from a list the vector that is closest to the 
@@ -242,19 +244,11 @@ ________________
       * It ignores the vectors in lst-vectors for which the 
         distance value cannot be computed."
    (unless (or (null lst-vectors)  (null test-vector))
-    (first (sort (
-    		(remove-if #'(lambda (y) (null y))
-				(list 
-					(let ((distance (funcall distance-fn lst-vectors test-vector) ))
-					)
-				)
-			)
-    	) 
-    	
-    	#'(lambda(a b) (< (abs a) (abs b))) :key #'second
-    ))
-   )
-)
+    (first (sort
+		(remove-if #'(lambda (y) (null y))
+			(let ((distance (funcall distance-fn (car lst-vectors) test-vector) ))
+				(list (list (car lst-vectors) distance) (nearest-neighbor (cdr lst-vectors) test-vector distance-fn))))
+    	#'(lambda(a b) (< (abs a) (abs b))) :key #'second))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
