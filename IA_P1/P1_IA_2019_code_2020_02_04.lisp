@@ -14,11 +14,12 @@
 
     OUTPUT: estimation of the zero of f, NIL if not converged"
 
-  (unless (or (= max-iter 0) (< (abs (funcall df-dx x0)) 0.0001))
-    (let ((x (- x0 (/ (funcall f x0) (funcall df-dx x0)))))
-      (if (< (abs (- x x0)) tol-abs) 
+  ;;PREGUNTA: ¿0.0001 deberia ser tol-abs?
+  (unless (or (= max-iter 0) (< (abs (funcall df-dx x0)) 0.0001)) ;;End of algorithm because the max-iter number was reached without fulfilling the condition
+    (let ((x (- x0 (/ (funcall f x0) (funcall df-dx x0))))) ;;Stores de value of Xn+1
+      (if (< (abs (- x x0)) tol-abs) ;;The estimation of Xn+1 is convergent
         x
-        (newton f df-dx (- max-iter 1) x tol-abs)))))
+        (newton f df-dx (- max-iter 1) x tol-abs))))) ;;Try again with Xn+1
 
 
 
@@ -38,11 +39,10 @@
 
 
     OUTPUT: list of estimations of the zeros of f"
+  
+  ;;Applies the Newton function to all the elements in the list of seeds
   (mapcar #'(lambda (x) (newton f df-dx max-iter x tol-abs)) seeds))
   
-
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,6 +59,8 @@
     OUTPUT: list of pairs, such that 
                the first element of the pair is elt. 
                the second element is an element from lst"
+  
+  ;;For each element of the list, create a list/pair with it and the element
   (mapcar #'(lambda(x) (list elt x)) lst)) 
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -73,6 +75,8 @@
 
 
     OUTPUT: list of pairs, of the cartesian product"
+  
+  ;;For each element of the first list, combine it with each element of the second list using the previous function
   (mapcar #'(lambda(x) (combine-elt-lst x lst2)) lst1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -106,6 +110,10 @@
 
    NOTES: 
         * Implemented with mapcar"
+  
+  ;;The scalar product is the sum of the product of each element in the vectors
+  ;;First, calculate all the products and store them in a list
+  ;;Finally, sum all of the results
   (reduce #'+ (mapcar #'(lambda (a b) (* a b)) x y)))
 
 
@@ -120,6 +128,11 @@
 
 
     OUTPUT: euclidean norm of x"
+
+;;The euclidean norm is the squared root of the sum of the square of each element of the vector
+;;First, create a list with the square of each element
+;;Then, sum all the results
+;;Finally, calculate the squared root of the sum
 (sqrt (reduce #'+ (mapcar #'(lambda (a) (* a a)) x))))
 
 
@@ -129,7 +142,7 @@ ________________
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; euclidean-distance
 
-
+;;PREGUNTA: asumir vectores de igual tamaño?? Y si alguno es nulo??
 (defun euclidean-distance (x y) 
   "Calculates the euclidean (l2) distance between two vectors
  
@@ -138,6 +151,11 @@ ________________
 
 
     OUTPUT: euclidean distance between x and y"
+  
+  ;;For the euclidean distance, we calculate the euclidean norm of the difference between 2 vectors
+  ;;First, create a list with the differences of each element of the vectors
+  ;;Then, calculate the square of each element in that list and sum the results
+  ;;Finally, calculate the squared root of the sum 
   (sqrt (reduce #'+ (mapcar #'(lambda (c) (* c c)) (mapcar #'(lambda (a b) (- b a)) x y)))))
 
 
@@ -159,8 +177,11 @@ ________________
        * Evaluates to NIL (not defined)
          if at least one of the vectors has zero norm.
        * The two vectors are assumed to have the same length"
-  (unless (or (null x)  (null y))
-    (/ (scalar-product x y) (* (euclidean-norm x) (euclidean-norm y)))))
+ 
+ ;;First, calculate the euclidean norm of the vectors
+ ;;Then, the scalar product of the vectors
+  (unless (or (null x)  (null y)) ;;Error if a vector has an euclidean norm of 0, that is, the vector is null
+    (/ (scalar-product x y) (* (euclidean-norm x) (euclidean-norm y))))) ;;The cosine similarity is the division between the scalar product and the product of the norms
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -180,7 +201,7 @@ ________________
         if at least one of the vectors has zero norm.
       * The two vectors are assumed to have the same length"
   (unless (or (null x)  (null y))
-  (/ (acos (cosine-similarity x y)) pi)))
+  (/ (acos (cosine-similarity x y)) pi))) ;;Reverse of cosine similarity divided by pi
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; select-vectors
 
@@ -209,11 +230,11 @@ ________________
       (remove-if #'(lambda (y) (null y))
         (mapcar #'(lambda (x)
           (let 
-            ((similarity (funcall similarity-fn x test-vector)))
-            (unless (< similarity threshold)
+            ((similarity (funcall similarity-fn x test-vector))) ;;Store the similarity result in a variable
+            (unless (< similarity threshold) ;;Only store similarities that are greater than the threshold, if defined
               (list x similarity)))) lst-vectors))
       #'(lambda(a b) (> (abs a) (abs b)))
-        :key #'second)))
+        :key #'second))) ;;Sort the pairs of the resulting list using the similarity value
 
 
  
