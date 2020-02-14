@@ -81,27 +81,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(defun combine-list-of-lsts (lolsts)
-  "Combinations of N elements, each of wich
-
-
-   INPUT:  lstolsts: list of N sublists (list1 ... listN)
-
-
-   OUTPUT: list of sublists of N elements, such that in each 
-           sublist the first element is from list1
-                 the second element is from list 2
-                 ...
-                 the Nth element is from list N"
-  (if (null lolsts)
-    NIL
-    (let ((scalar (combine-list-of-lsts (cdr lolsts))))
-      (mapcar #'(lambda(x) (cons x scalar)) (car lolsts))
-    )
-  )
-)
-
 (defun combine-list-of-lsts (lolsts)
   "Combinations of N elements, each of wich
 
