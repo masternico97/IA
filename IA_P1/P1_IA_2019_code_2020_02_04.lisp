@@ -16,12 +16,28 @@
 
   ;;PREGUNTA: ¿0.0001 deberia ser tol-abs?
   (unless (or (= max-iter 0) (< (abs (funcall df-dx x0)) 0.0001)) ;;End of algorithm because the max-iter number was reached without fulfilling the condition
-    (let ((x (- x0 (/ (funcall f x0) (funcall df-dx x0))))) ;;Stores de value of Xn+1
-      (if (< (abs (- x x0)) tol-abs) ;;The estimation of Xn+1 is convergent
-        x
-        (newton f df-dx (- max-iter 1) x tol-abs))))) ;;Try again with Xn+1
+          (let ((x (- x0 (/ (funcall f x0) (funcall df-dx x0))))) ;;Stores de value of Xn+1
+            (if (< (abs (- x x0)) tol-abs) ;;The estimation of Xn+1 is convergent
+              x
+              (newton f df-dx (- max-iter 1) x tol-abs))))) ;;Try again with Xn+1
 
-
+;; TESTS
+;; Ejemplo dado:
+;; >> (newton #'sin #'cos 50 2.0) 
+;; 3.1415927
+;; Caso base:
+;; >> (newton #'sin #'cos 0 2.0) 
+;; NIL
+;; Casos típicos:
+;; >> (newton #'sin #'cos 50 1)
+;; 0.0
+;; >> (newton #'sin #'cos 50 pi)
+;; 3.141592653589793d0
+;; >> (newton #'sin #'cos 50 6)
+;; 6.2831855
+;; Caso especial:
+;; >> (newton #'sin #'cos 50 (/ pi 2)) 
+;; NIL
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,6 +60,22 @@
   (mapcar #'(lambda (x) (newton f df-dx max-iter x tol-abs)) seeds))
   
 
+;; TESTS
+;; Ejemplo dado:
+;; >> (newton-all #'sin #'cos 50 (mapcar #'eval '((/ pi 2) 1.0 2.0 4.0 6.0))) 
+;; (NIL 0.0 3.1415927 3.1415927 6.2831855)
+;; Caso base:
+;; >> (newton-all #'sin #'cos 0 (mapcar #'eval '((/ pi 2) 1.0 2.0 4.0 6.0))) 
+;; Casos típicos:
+;; (newton-all #'sin #'cos 50 '(1.0 2.0 4.0 6.0))
+;; (0.0 3.1415927 3.1415927 6.2831855)
+;; (NIL NIL NIL NIL NIL)
+;; Caso especial:
+;; >> (newton-all #'sin #'cos 50 NIL) 
+;; NIL
+;; >> (newton-all #'sin #'cos 0 '((NIL))) 
+;; (NIL)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -61,7 +93,20 @@
                the second element is an element from lst"
   
   ;;For each element of the list, create a list/pair with it and the element
-  (mapcar #'(lambda(x) (list elt x)) lst)) 
+  (unless (or (null elt)  (null lst))
+    (mapcar #'(lambda(x) (list elt x)) lst)))
+
+;; TESTS
+;; Ejemplo dado:
+;; >> (combine-elt-lst'a '(1 2 3))
+;; ((A 1) (A 2) (A 3))
+;; Caso base:
+;; >> (combine-elt-lst '() '())
+;; NIL
+;; >> (combine-elt-lst 'a '())
+;; NIL
+;; >> (combine-elt-lst '() '(1 2 3))
+;; NIL
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -204,7 +249,7 @@ ________________
         if at least one of the vectors has zero norm.
       * The two vectors are assumed to have the same length"
   (unless (or (null x)  (null y))
-  (/ (acos (cosine-similarity x y)) pi))) ;;Reverse of cosine similarity divided by pi
+    (/ (acos (cosine-similarity x y)) pi))) ;;Reverse of cosine similarity divided by pi
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; select-vectors
 
@@ -229,15 +274,14 @@ ________________
      NOTES: 
         * Uses remove-if and sort"
   (unless (or (null lst-vectors)  (null test-vector))
-    (sort
-      (remove-if #'(lambda (y) (null y))
-        (mapcar #'(lambda (x)
-          (let 
-            ((similarity (funcall similarity-fn x test-vector))) ;;Store the similarity result in a variable
-            (unless (< similarity threshold) ;;Only store similarities that are greater than the threshold, if defined
-              (list x similarity)))) lst-vectors))
-      #'(lambda(a b) (> (abs a) (abs b)))
-        :key #'second))) ;;Sort the pairs of the resulting list using the similarity value
+    (sort (remove-if #'(lambda (y) (null y))
+            (mapcar #'(lambda (x)
+                        (let ((similarity (funcall similarity-fn x test-vector))) ;;Store the similarity result in a variable
+                          (unless (< similarity threshold) ;;Only store similarities that are greater than the threshold, if defined
+                            (list x similarity)))) 
+                    lst-vectors))
+          #'(lambda(a b) (> (abs a) (abs b)))
+          :key #'second))) ;;Sort the pairs of the resulting list using the similarity value
 
 
  
@@ -268,11 +312,12 @@ ________________
       * It ignores the vectors in lst-vectors for which the 
         distance value cannot be computed."
    (unless (or (null lst-vectors)  (null test-vector))
-    (first (sort
-		(remove-if #'(lambda (y) (null y))
-			(let ((distance (funcall distance-fn (car lst-vectors) test-vector) ))
-				(list (list (car lst-vectors) distance) (nearest-neighbor (cdr lst-vectors) test-vector distance-fn))))
-    	#'(lambda(a b) (< (abs a) (abs b))) :key #'second))))
+    (first (sort (remove-if #'(lambda (y) (null y))
+			                      (let ((distance (funcall distance-fn (car lst-vectors) test-vector) ))
+                      				(list (list (car lst-vectors) distance) 
+                                    (nearest-neighbor (cdr lst-vectors) test-vector distance-fn))))
+                  #'(lambda(a b) (< (abs a) (abs b))) 
+                  :key #'second))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -300,19 +345,12 @@ ________________
 
 (defun backward-chaining-aux (goal lst-rules pending-goals)
   (when (some #'(lambda (x) (equal goal (cadr x))) lst-rules)
-    (let ((found (car (member-if #'(lambda (x) (equal goal (cadr x))) lst-rules))))
-      (if (null (car found))
-        T
-        (if (every #'(lambda (x) (equal x T)) (mapcar  #'(lambda (y) (backward-chaining-aux y (remove-if #'(lambda (x) (equal found x)) lst-rules) (cons goal pending-goals))) (car found)))
-          T
-          (backward-chaining-aux goal (remove-if #'(lambda (x) (equal found x)) lst-rules) pending-goals)
-        )
-      )
-    )
-  )
-)
-
-
+        (let ((found (car (member-if #'(lambda (x) (equal goal (cadr x))) lst-rules))))
+          (if (null (car found))
+            T
+            (if (every #'(lambda (x) (equal x T)) (mapcar  #'(lambda (y) (backward-chaining-aux y (remove-if #'(lambda (x) (equal found x)) lst-rules) (cons goal pending-goals))) (car found)))
+              T
+              (backward-chaining-aux goal (remove-if #'(lambda (x) (equal found x)) lst-rules) pending-goals))))))
 
 
 ________________
