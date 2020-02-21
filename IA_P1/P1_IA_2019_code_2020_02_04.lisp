@@ -303,23 +303,14 @@ ________________
     (let ((found (car (member-if #'(lambda (x) (equal goal (cadr x))) lst-rules))))
       (if (null (car found))
         T
-        (every #'(lambda (x) (equal x T)) (mapcar  #'(lambda (y) (backward-chaining-aux y (remove-if #'(lambda (x) (equal found x)) lst-rules) (append goal pending-goals))) (car found)))
+        (if (every #'(lambda (x) (equal x T)) (mapcar  #'(lambda (y) (backward-chaining-aux y (remove-if #'(lambda (x) (equal found x)) lst-rules) (cons goal pending-goals))) (car found)))
+          T
+          (backward-chaining-aux goal (remove-if #'(lambda (x) (equal found x)) lst-rules) pending-goals)
+        )
       )
     )
   )
 )
-
-(defun backward-chaining-aux (goal lst-rules pending-goals)
-  (when (some #'(lambda (x) (equal goal (cadr x))) lst-rules)
-    (let ((found (car (member-if #'(lambda (x) (equal goal (cadr x))) lst-rules))))
-      (if T)
-        found
-        (every #'(lambda (x) (equal x T)) (mapcar  #'(lambda (y) (backward-chaining-aux y (remove-if #'(lambda (x) (equal found x)) lst-rules) (append goal pending-goals))) (car found)))
-      )
-    )
-  )
-)
-
 
 
 
