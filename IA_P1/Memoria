@@ -1,0 +1,88 @@
+8) 
+	a. El algoritmo parte de un nodo objetivo (end), una representación del grafo en forma de lista de adyacencia (net) 
+	y una lista de listas que representa el camino que llevamos recorrido en orden inverso (queue).
+	En cada paso del algoritmo se va a analizar el camino que llevamos. Si el primer elemento del camino es el nodo objetivo, 
+	se le da la vuelta a los elementos que conforman el camino, de forma que este se devuelve ordenado. 
+	Si no es el objetivo, se añaden al camino recorrido los hijos del nodo actual.
+	Esta funcionalidad la realiza new-paths. Para ello, busca en el grafo los hijos de dicho nodo 
+	(mediante la función assoc y sin contar el primer elemento, dada la representación elegida para el grafo). 
+	Una vez obtenidos los hijos, se añade cada hijo al camino, y eso se añade a la cola de caminos para analizar 
+	en la siguiente vuelta del algoritmo.
+	
+	A la cola se van añadiendo, en cada paso, listas de caminos en el orden en el que fueron generados, 
+	de forma que no se exploran los niveles más profundos hasta haber analizado todos los nodos del nivel actual.
+	
+	b.
+		- Grafo ( (a b) (b c) (c a) (d e) (e f) )
+		  Si queremos ir de a hasta f, en la primera llamada, la cola contiene ((a))
+		  En la segunda, ((b a))
+		  En la tercera, ((c b a))
+		  En la cuarta, ((a c b a))
+		  El algoritmo entraría en un bucle porque hay un ciclo y el objetivo
+		  no está conectado al mismo
+
+		- Grafo dirigido del ejemplo.
+		  Si queremos ir de c hasta f, en la primera llamada la cola tendrá ((c))
+		  En la segunda, ((e c))
+		  En la tercera, ((b e c) (f e c))
+		  En la cuarta, ((f e c) (d b e c) (f b e c))
+		  En ese momento, vemos que node es f, el objetivo.
+		  Se da la vuelta al camino y se obtiene c-e-f
+		
+		- Grafo (  )
+	
+	c. 
+		Se quiere ir desde c hasta d. Se realizan 5 llamadas a la función.
+		((c))
+		((e c))
+		((b e c) (f e c))
+		((f e c) (d b e c) (f b e c))
+		((d b e c) (f b e c))
+		En este momento, se ha llegado al nodo objetivo y se da la vuelta al camino,
+		obteniendo c-e-b-d
+	
+	d. 
+		i.end: el nodo objetivo
+		ii.queue: lista de listas. Cada sublista es un camino desde el nodo origen hasta cada hijo del nodo expandido.
+				La cola refleja una búsqueda en anchura, dejando para visitar en primer lugar
+				los nodos que fueron generados primero.
+		iii.net: representación del grafo como una lista de adyacencia
+		iv.path: lista con el camino que vamos recorriendo en cada paso del algoritmo.
+		v.node: primer elemento del camino. Como está en orden inverso,
+				es el nodo que toca expandir.
+		vi.new-paths: dado un camino, un nodo y el grafo, expande el nodo y saca sus hijos,
+		y cada uno lo añade al camino (el cual está desordenado, desde abajo hasta arriba si fuera un árbol) 
+		en forma de sublista.
+		vii.La función parte de un nodo origen, nodo destino y el grafo en forma de lista de adyacencia.
+			Con eso, llama a BFS pasándole una lista de listas en la que se ha insertado el nodo origen.
+			Esta lista sirve para formar el camino recorrido hasta el momento, que como no hemos
+			explorado aún nada, solamente contiene el nodo origen, que será expandido en BFS.
+
+			La función resuelve el problema del camino más corto porque implementa búsqueda en anchura.
+			Primero expande el nodo y mete los hijos en orden de expansión en la cola. Así, los irá expandiendo
+			en dicho orden, garantizando de ese modo encontrar el camino más corto.ç
+	
+	e. mientras (cola != vacío):
+	   	nodo = cola.pop( )
+		camino.push(nodo)
+
+		si nodo == fin:
+			mientras camino != vacío:
+				print camino.pop( )
+			return
+		
+		para cada hijo del nodo:
+			cola.push(hijo)
+	
+	f. mientras (cola != vacío) se ha implementado con la llamada recursiva y la comprobación de que
+	la cola no sea nula. 
+		cola.pop( ) es el node, el primer elemento del path. Así, evitamos tener
+		otra cola con el camino: lo tenemos como sublistas dentro de la cola.
+		Se comprueba si el nodo es el final, y se invierte el camino y se devuelve directamente, sin que
+		haga falta tener otra cola aparte.
+		Para expandir el nodo y obtener los hijos se usa la función new-paths y la lista de adyaencia que
+		representa el grafo.
+
+	g. bfs ('f, ((c)), ( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+	   Observamos que el camino obtenido es c-a-b-f. Sin embargo, tarda mucho en obtenerlo porque repite
+	   muchos nodos, pues no detecta cuales ha visitado

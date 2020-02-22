@@ -14,7 +14,6 @@
 
     OUTPUT: estimation of the zero of f, NIL if not converged"
 
-  ;;PREGUNTA: ¿0.0001 deberia ser tol-abs?
   (unless (or (= max-iter 0) (< (abs (funcall df-dx x0)) 0.0001)) ;;End of algorithm because the max-iter number was reached without fulfilling the condition
           (let ((x (- x0 (/ (funcall f x0) (funcall df-dx x0))))) ;;Stores de value of Xn+1
             (if (< (abs (- x x0)) tol-abs) ;;The estimation of Xn+1 is convergent
@@ -183,14 +182,9 @@
 ;;Finally, calculate the squared root of the sum
 (sqrt (reduce #'+ (mapcar #'(lambda (a) (* a a)) x))))
 
-
-________________
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; euclidean-distance
 
-;;PREGUNTA: asumir vectores de igual tamaño?? Y si alguno es nulo??
 (defun euclidean-distance (x y) 
   "Calculates the euclidean (l2) distance between two vectors
  
@@ -288,11 +282,6 @@ ________________
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-________________
-
-;;PREGUNTA: ¿asumimos que los vectores de la lista son de la misma longitud? Si no, ¿que hacemos?
-
-
 (defun nearest-neighbor (lst-vectors test-vector distance-fn)
   "Selects from a list the vector that is closest to the 
    reference vector according to the specified distance function 
@@ -322,6 +311,17 @@ ________________
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun backward-chaining-aux (goal lst-rules pending-goals)
+  (when (some #'(lambda (x) (equal goal (cadr x))) lst-rules)
+        (let ((found (car (member-if #'(lambda (x) (equal goal (cadr x))) lst-rules))))
+          (if (null (car found))
+            T
+            (if (every #'(lambda (x) (equal x T)) (mapcar  #'(lambda (y) (backward-chaining-aux y (remove-if #'(lambda (x) (equal found x)) lst-rules) (cons goal pending-goals))) (car found)))
+              T
+              (backward-chaining-aux goal (remove-if #'(lambda (x) (equal found x)) lst-rules) pending-goals))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defun backward-chaining (goal lst-rules)
   "Backward-chaining algorithm for propositional logic
@@ -342,19 +342,12 @@ ________________
   (unless (or (null goal)  (null lst-rules))
     (backward-chaining-aux goal lst-rules NIL)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun backward-chaining-aux (goal lst-rules pending-goals)
-  (when (some #'(lambda (x) (equal goal (cadr x))) lst-rules)
-        (let ((found (car (member-if #'(lambda (x) (equal goal (cadr x))) lst-rules))))
-          (if (null (car found))
-            T
-            (if (every #'(lambda (x) (equal x T)) (mapcar  #'(lambda (y) (backward-chaining-aux y (remove-if #'(lambda (x) (equal found x)) lst-rules) (cons goal pending-goals))) (car found)))
-              T
-              (backward-chaining-aux goal (remove-if #'(lambda (x) (equal found x)) lst-rules) pending-goals))))))
-
-
-________________
-
+ (defun new-paths (path node net)
+  (mapcar #'(lambda(n) 
+        (cons n path)) 
+                (rest (assoc node net))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Breadth-first-search in graphs
@@ -371,11 +364,6 @@ ________________
                      (new-paths path node net)) 
              net))))) 
 
-
- (defun new-paths (path node net)
-  (mapcar #'(lambda(n) 
-        (cons n path)) 
-                (rest (assoc node net))))
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -385,12 +373,69 @@ ________________
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun new-paths-improved (path node net)
+  "Gets the children of a node and adds them to the queue of nodes to be explored, only if they have not appeared yet.
+   If the child is already present in the path, NIL is added and removed afterwards.
+ 
+   INPUT: path: list of nodes already visited, to add the children to it
+          node: node to get its children
+          net:  graph represented as an adjacent list with a list of sublists of the form
+                    (<node> <children>) 
+                    where <node> is a node of the graph
+                    and   <children> are its children nodes  
+
+   OUTPUT: list of sublists of the form 
+            (<node path>)
+            where node is the child 
+            and path are the nodes forming the path already visited"
+
+  (remove NIL (mapcar #'(lambda(n)
+      (if (member n path)
+        NIL
+        (cons n path)))
+                (rest (assoc node net)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
 (defun bfs-improved (end queue net)
-  )
+   "Breadth-First-Search improved taking into account repeated nodes
+ 
+   INPUT: end:   goal node
+          queue: list of sublists with the nodes -and their path- pending to be visited in order of creation, so to ensure that
+                 the nodes of a level are all explored before exploring the ones of a deeper level.
+          net:   graph represented as an adjacent list with a list of sublists of the form
+                    (<node> <children>) 
+                    where <node> is a node of the graph
+                    and   <children> are its children nodes  
 
+   OUTPUT: list of nodes with the path to the goal (goal reached) or NIL (goal cannot be reached)"
 
+  (if (null queue) 
+      NIL
+    (let* ((path (first queue))
+           (node (first path)))
+      (if (eql node end) 
+          (reverse path)
+        (bfs-improved end 
+             (append (rest queue) 
+                     (new-paths-improved path node net)) 
+             net))))) 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun shortest-path-improved (end queue net)
-  )
+     "Gets the shortest path from a node to another in a graph using the BFS algorithm.
+  
+    INPUT:  end: list of nodes already visited, to add the children to it
+            queue: node to get its children
+            net:  graph represented as an adjacent list with a list of sublists of the form
+                      (<node> <children>) 
+                      where <node> is a node of the graph
+                      and   <children> are its children nodes  
+
+    OUTPUT: list of nodes with the path to the goal (goal reached) or NIL (goal cannot be reached)"
+
+  (bfs-improved end queue net))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
