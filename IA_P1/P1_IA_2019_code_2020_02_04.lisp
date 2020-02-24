@@ -480,6 +480,17 @@
         (cons n path)) 
                 (rest (assoc node net))))
 
+;; TESTS
+;; Casos típicos:
+;; >> (new-paths '(e c) 'e '((a d) (b d f) (c e) (d f) (e b f) (f)))
+;; ((B E C) (F E C))
+;; >> (new-paths '(b a) 'b '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; ((A B A) (D B A) (E B A) (F B A))
+;; Casos especiales:
+;; >> (new-paths '(b a) '() '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; NIL
+;; >> (new-paths '() 'a '( (a b) (b c) (c a) (d e) (e f) ))
+;; ((B))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Breadth-first-search in graphs
 ;;;
@@ -495,12 +506,37 @@
                      (new-paths path node net)) 
              net))))) 
 
-;;;
+;; TESTS
+;; Casos típicos:
+;; >> (bfs 'f '((c)) '((a d) (b d f) (c e) (d f) (e b f) (f)))
+;; (C E F)
+;; >> (bfs 'f '((c)) '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; (C A B F)
+;; Casos especiales:
+;; >> (bfs 'f '(()) '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; NIL
+;; >> (bfs 'f '((a)) '( (a b) (b c) (c a) (d e) (e f) ))
+;; el algoritmo entra en un bucle infinito  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (defun shortest-path (start end net)
   (bfs end (list (list start)) net))    
+
+
+;; TESTS
+;; Casos típicos:
+;; >> (shortest-path 'c 'f '((a d) (b d f) (c e) (d f) (e b f) (f)))
+;; (C E F)
+;; >> (shortest-path 'c 'f '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; (C A B F)
+;; >> (shortest-path 'a 'c '( (a b e) (b c) (d c) (e d) ))
+;; (A B C)
+;; Casos especiales:
+;; >> (shortest-path '() 'f '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; NIL
+;; >> (shortest-path 'a 'f '( (a b) (b c) (c a) (d e) (e f) ))
+;; el algoritmo entra en un bucle infinito 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -526,6 +562,17 @@
         (cons n path)))
                 (rest (assoc node net)))))
 
+;; TESTS
+;; Casos típicos:
+;; >> (new-paths-improved '(e c) 'e '((a d) (b d f) (c e) (d f) (e b f) (f)))
+;; ((B E C) (F E C))
+;; >> (new-paths-improved '(b a) 'b '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; ((D B A) (E B A) (F B A))
+;; Casos especiales:
+;; >> (new-paths-improved '(b a) '() '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; NIL
+;; >> (new-paths-improved '() 'a '( (a b) (b c) (c a) (d e) (e f) ))
+;; ((B))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
 (defun bfs-improved (end queue net)
@@ -552,14 +599,26 @@
                      (new-paths-improved path node net)) 
              net))))) 
 
+;; TESTS
+;; Casos típicos:
+;; >> (bfs-improved 'f '((c)) '((a d) (b d f) (c e) (d f) (e b f) (f)))
+;; (C E F)
+;; >> (bfs-improved 'f '((c)) '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; (C A B F)
+;; Casos especiales:
+;; >> (bfs-improved 'f '(()) '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; NIL
+;; >> (bfs-improved 'f '((a)) '( (a b) (b c) (c a) (d e) (e f) ))
+;; NIL 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun shortest-path-improved (end queue net)
-     "Gets the shortest path from a node to another in a graph using the BFS algorithm.
+     "Gets the shortest path from a node to another in a graph using the BFS algorithm. Avoids infinite loop in graph with cycles.
   
-    INPUT:  end: list of nodes already visited, to add the children to it
-            queue: node to get its children
-            net:  graph represented as an adjacent list with a list of sublists of the form
+    INPUT:  end:   goal node
+            queue: list of sublists with the nodes -and their path- pending to be visited in order of creation, so to ensure that
+                   the nodes of a level are all explored before exploring the ones of a deeper level.
+            net:   graph represented as an adjacent list with a list of sublists of the form
                       (<node> <children>) 
                       where <node> is a node of the graph
                       and   <children> are its children nodes  
@@ -568,5 +627,15 @@
 
   (bfs-improved end queue net))
 
-
+;; TESTS
+;; Casos típicos:
+;; >> (shortest-path-improved 'f '((c)) '((a d) (b d f) (c e) (d f) (e b f) (f)))
+;; (C E F)
+;; >> (shortest-path-improved 'f '((c)) '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; (C A B F)
+;; Casos especiales:
+;; >> (shortest-path-improved 'f '(()) '( (a b c d e) (b a d e f) (c a g) (d a b g h) (e a b g h) (f b h) (g c d e h) (h d e f g) ))
+;; NIL
+;; >> (shortest-path-improved 'f '((a)) '( (a b) (b c) (c a) (d e) (e f) ))
+;; NIL 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
