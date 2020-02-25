@@ -23,6 +23,11 @@
 	;; >> (newton #'sin #'cos 50 (/ pi 2)) 
 	;; NIL
 
+	Comentarios de implementacion:
+	Dado que hemos encontrado algun que otro problema para el calculo de coseno de pi/2 pues no da 0,
+	y que deberiamos tener en cuenta la división por cero.
+	Hemos puesto que si al calcular f(x0) / df-dx(x0) el divisor es menor en valor absoluto
+	que 0.0001, se nos devuelve NIL
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -254,6 +259,17 @@
 					(if (every #'(lambda (x) (equal x T)) (mapcar  #'(lambda (y) (backward-chaining-aux y (remove-if #'(lambda (x) (equal found x)) lst-rules) (cons goal pending-goals))) (car found)))
 					T
 					(backward-chaining-aux goal (remove-if #'(lambda (x) (equal found x)) lst-rules) pending-goals))))))
+
+	;; TESTS
+	;; Ejemplo dado:
+	;; >> (backward-chaining-aux 'Q '((NIL A) (NIL B) ((P) Q) ((L M) P) ((B L) M) ((A P) L) ((A B) L)) NIL)
+	;; T
+	;; >> (backward-chaining-aux 'P '((NIL A) (NIL B)  ((L M) P) ((B L) M) ((A P) L) ((A B) L)) '(Q))
+	;; T
+	;; >> (backward-chaining-aux '() '((NIL A) (NIL B)  ((L M) P) ((B L) M) ((A P) L) ((A B) L)) '(Q))
+	;; NIL
+	;; >> (backward-chaining-aux 'Q '() NIL)
+	;; NIL
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

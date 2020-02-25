@@ -440,6 +440,17 @@
               T
               (backward-chaining-aux goal (remove-if #'(lambda (x) (equal found x)) lst-rules) pending-goals))))))
 
+;; TESTS
+;; Ejemplo dado:
+;; >> (backward-chaining-aux 'Q '((NIL A) (NIL B) ((P) Q) ((L M) P) ((B L) M) ((A P) L) ((A B) L)) NIL)
+;; T
+;; >> (backward-chaining-aux 'P '((NIL A) (NIL B)  ((L M) P) ((B L) M) ((A P) L) ((A B) L)) '(Q))
+;; T
+;; >> (backward-chaining-aux '() '((NIL A) (NIL B)  ((L M) P) ((B L) M) ((A P) L) ((A B) L)) '(Q))
+;; NIL
+;; >> (backward-chaining-aux 'Q '() NIL)
+;; NIL
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
