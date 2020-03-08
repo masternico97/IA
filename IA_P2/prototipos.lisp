@@ -190,17 +190,15 @@
 ;;    NIL: invalid path: either the final city is not a destination or some
 ;;         of the mandatory cities are missing from the path.
 ;;
+(defun f-goal-test-aux (node mandatory)
+  (if (null mandatory)
+      T
+      (unless (null node)
+              (f-goal-test-aux (node-parent node) (remove-if #'(lambda(x)(equal (node-city node) x)) mandatory)))))
+
 (defun f-goal-test (node destination mandatory) 
-  (and (some #'(lambda(x) (equal node-city x) destination) 
-       (Funcio recursiva aux que devuelva true)
-  )))
-
-Si city del nodo actual es uno de ls destination y si los padres han pasado por todos los mandatory == true
-
-Funcion recursiva aux, 
-caso base el nodo que se te ha pasado es nil, devuelve nil
-evaluar si node-city en mandatory, si es así borrarla de mandatory
-si mandatory vacia return true sino seguir con node-parent esta funcion aux
+  (when (some #'(lambda(x) (equal (node-city node) x)) destination) 
+        (f-goal-test-aux (node-parent node) mandatory)))
 
 ;;
 ;; END: Exercise 3 -- Goal test
@@ -229,7 +227,9 @@ si mandatory vacia return true sino seguir con node-parent esta funcion aux
 ;;    NIL: The nodes are not equivalent
 ;;
 (defun f-search-state-equal (node-1 node-2 &optional mandatory)
-  )
+  (when (equal (node-city node-1) (node-city node-2))
+        (and (f-goal-test-aux (node-parent node-1) mandatory)
+             (f-goal-test-aux (node-parent node-2) mandatory))))
 
 ;;
 ;; END: Exercise  -- Equal predicate for search states
