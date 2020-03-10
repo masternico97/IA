@@ -298,10 +298,19 @@
 ;;    A list (node_1,...,node_n) of nodes that can be reached from the
 ;;    given one
 ;;
+(defun expand-node-action (node action problem)
+  (make-node :city (action-final action)
+             :parent node 
+             :action action 
+             :depth (+ (node-depth node) 1)
+             :g (+ (node-g node) (action-cost action))
+             :h (funcall (problem-f-h problem) (action-final action) *heuristic*) 
+             :f (+ (+ (node-g node) (action-cost action)) 
+                   (funcall (problem-f-h problem) (action-final action) *heuristic*))))
+
 (defun expand-node (node problem)
-  (funcall (problem-succ problem) (node-city node) (problem-cities problem)))
-
-
+  (mapcar #'(lambda(x) (expand-node-action node x problem))
+          (funcall (problem-succ problem) (node-city node) *trains*)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -333,6 +342,45 @@
 ;;;  receives a strategy, extracts from it the comparison function, 
 ;;;  and calls insert-nodes
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Inserts a node in an ordered list keeping the result list
+;; ordered with respect to the given comparison function
+;;
+;; Input:
+;;    node: node to be inserted in the
+;;           other list
+;;    lst-nodes: the (ordered) list of nodes in which the given nodes 
+;;               are to be inserted
+;;    node-compare-p: a function node x node --> 2 that returns T if the 
+;;                    first node comes first than the second.
+;;
+;; Returns:
+;;    An ordered list of nodes which includes the nodes of lst-nodes and 
+;;    node. The list is ordered with respect to the  criterion node-compare-p.
+;; 
+(defun insert-node (node lst-nodes node-compare-p)
+Comparar de izquierda a derecha
+)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Inserts a node in an ordered list keeping the result list
+;; ordered with respect to the given comparison function
+;;
+;; Input:
+;;    node: node to be inserted in the
+;;           other list
+;;    lst-nodes: the (ordered) list of nodes in which the given nodes 
+;;               are to be inserted
+;;    node-compare-p: a function node x node --> 2 that returns T if the 
+;;                    first node comes first than the second.
+;;
+;; Returns:
+;;    An ordered list of nodes which includes the nodes of lst-nodes and 
+;;    node. The list is ordered with respect to the  criterion node-compare-p.
+;; 
+(defun insert-node (node lst-nodes node-compare-p)
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -399,9 +447,14 @@
 ;; us which nodes should be analyzed first. In the A* strategy, the first 
 ;; node to be analyzed is the one with the smallest value of g+h
 ;;
+
+(defun g-leq (node-1 node-2)
+  (<=  (node-g node-1)(node-g node-2)))
+
 (defparameter *A-star*
-  NIL
-  )
+  (make-strategy
+    name:             'A-star                 
+    node-compare-p:   #'g-leq))
 ;;
 ;; END: Exercise 8 -- Definition of the A* strategy
 ;;
@@ -420,65 +473,4 @@
 ;;;    the auxiliary function.
 ;;;
 ;;;    The auxiliary is a recursive function that extracts nodes from
-;;;    the open list, expands them, inserts the neighbors in the
-;;;    open-list, and the expanded node in the closed list. There is a
-;;;    caveat: with this version of the algorithm, a node can be
-;;;    inserted in the open list more than once. In this case, if we
-;;;    extract a node in the open list and the following two condition old:
-;;;
-;;;     the node we extract is already in the closed list (it has
-;;;     already been expanded)
-;;;       and
-;;;     the path estimation that we have is better than the one we
-;;;     obtain from the node in the open list
-;;;
-;;;     then we ignore the node.
-;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;;  Interface function for the graph search. 
-;;
-;;  Input:
-;;    problem: the problem structure from which we get the general 
-;;             information (goal testing function, action operatos,
-;;             starting node, heuristic, etc.
-;;    strategy: the strategy that decide which node is the next extracted
-;;              from the open-nodes list
-;;
-;;    Returns:
-;;     NIL: no path to the destination nodes
-;;     If these is a path, returns the node containing the final state.
-;;
-;;    See the graph-search-aux for the complete structure of the
-;;    returned node. 
-;;    This function simply prepares the data for the auxiliary
-;;    function: creates an open list with a single node (the source)
-;;    and an empty closed list.
-;;
-(defun graph-search (problem strategy)
-)
-
-
-;;
-;; END: Exercise 9 -- Search algorithm
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; 
-;;;    BEGIN Exercise 10: Solution path
-;;;
-;*** solution-path ***
-
-(defun solution-path (node)
-)
-
-
-;;; 
-;;;    END Exercise 10: Solution path / action sequence
-;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;    the open  :list, expands them, inserts the neighbors in the
