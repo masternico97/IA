@@ -253,7 +253,13 @@
 ;;
 
 (defparameter *travel* 
-  NIL)
+  (make-problem
+    :cities                 *cities*
+    :initial-city           *origin*
+    :f-h                    #'f-h
+    :f-goal-test            #'f-goal-test
+    :f-search-state-equal   #'f-search-state-equal
+    :succ                   #'navigate))
 
 
 ;;
@@ -293,7 +299,7 @@
 ;;    given one
 ;;
 (defun expand-node (node problem)
-  )
+  (funcall (problem-succ problem) (node-city node) (problem-cities problem)))
 
 
 
