@@ -259,7 +259,7 @@
     :f-h                    #'f-h
     :f-goal-test            #'f-goal-test
     :f-search-state-equal   #'f-search-state-equal
-    :succ                   #'navigate))
+    :succ                   #'(lambda (node) (navigate node *trains*))))
 
 
 ;;
@@ -310,7 +310,7 @@
 
 (defun expand-node (node problem)
   (mapcar #'(lambda(x) (expand-node-action node x problem))
-          (funcall (problem-succ problem) (node-city node) *trains*)))
+          (funcall (problem-succ problem) (node-city node))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
