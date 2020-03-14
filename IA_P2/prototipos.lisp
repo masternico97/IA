@@ -459,4 +459,65 @@
 ;;;    the auxiliary function.
 ;;;
 ;;;    The auxiliary is a recursive function that extracts nodes from
-;;;    the open  :list, expands them, inserts the neighbors in the
+;;;    the open list, expands them, inserts the neighbors in the
+;;;    open-list, and the expanded node in the closed list. There is a
+;;;    caveat: with this version of the algorithm, a node can be
+;;;    inserted in the open list more than once. In this case, if we
+;;;    extract a node in the open list and the following two condition old:
+;;;
+;;;     the node we extract is already in the closed list (it has
+;;;     already been expanded)
+;;;       and
+;;;     the path estimation that we have is better than the one we
+;;;     obtain from the node in the open list
+;;;
+;;;     then we ignore the node.
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Interface function for the graph search. 
+;;
+;;  Input:
+;;    problem: the problem structure from which we get the general 
+;;             information (goal testing function, action operatos,
+;;             starting node, heuristic, etc.
+;;    strategy: the strategy that decide which node is the next extracted
+;;              from the open-nodes list
+;;
+;;    Returns:
+;;     NIL: no path to the destination nodes
+;;     If these is a path, returns the node containing the final state.
+;;
+;;    See the graph-search-aux for the complete structure of the
+;;    returned node. 
+;;    This function simply prepares the data for the auxiliary
+;;    function: creates an open list with a single node (the source)
+;;    and an empty closed list.
+;;
+(defun graph-search (problem strategy)
+)
+
+
+;;
+;; END: Exercise 9 -- Search algorithm
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; 
+;;;    BEGIN Exercise 10: Solution path
+;;;
+;*** solution-path ***
+
+(defun solution-path (node)
+)
+
+
+;;; 
+;;;    END Exercise 10: Solution path / action sequence
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
