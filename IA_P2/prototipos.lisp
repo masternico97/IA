@@ -360,27 +360,11 @@
 ;;    node. The list is ordered with respect to the  criterion node-compare-p.
 ;; 
 (defun insert-node (node lst-nodes node-compare-p)
-Comparar de izquierda a derecha
-)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Inserts a node in an ordered list keeping the result list
-;; ordered with respect to the given comparison function
-;;
-;; Input:
-;;    node: node to be inserted in the
-;;           other list
-;;    lst-nodes: the (ordered) list of nodes in which the given nodes 
-;;               are to be inserted
-;;    node-compare-p: a function node x node --> 2 that returns T if the 
-;;                    first node comes first than the second.
-;;
-;; Returns:
-;;    An ordered list of nodes which includes the nodes of lst-nodes and 
-;;    node. The list is ordered with respect to the  criterion node-compare-p.
-;; 
-(defun insert-node (node lst-nodes node-compare-p)
-)
+  (if (null lst-nodes)
+    (list node)
+    (if (funcall node-compare-p node (car lst-nodes))
+          (cons node lst-nodes) 
+          (cons (car lst-nodes) (insert-node node (cdr lst-nodes) node-compare-p)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -401,7 +385,9 @@ Comparar de izquierda a derecha
 ;;   criterion node-compare-p.
 ;; 
 (defun insert-nodes (nodes lst-nodes node-compare-p)
-)
+  (if (null nodes)
+      lst-nodes
+      (insert-nodes (cdr nodes) (insert-node (car nodes) lst-nodes node-compare-p) node-compare-p)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -429,7 +415,7 @@ Comparar de izquierda a derecha
 ;;   use it to call insert-nodes.
 ;;
 (defun insert-nodes-strategy (nodes lst-nodes strategy)
-  )
+  (insert-nodes nodes lst-nodes (strategy-node-compare-p strategy)))
 
 
 ;;
@@ -453,8 +439,8 @@ Comparar de izquierda a derecha
 
 (defparameter *A-star*
   (make-strategy
-    name:             'A-star                 
-    node-compare-p:   #'g-leq))
+    :name             'A-star                 
+    :node-compare-p   #'g-leq))
 ;;
 ;; END: Exercise 8 -- Definition of the A* strategy
 ;;
