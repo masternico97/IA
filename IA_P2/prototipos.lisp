@@ -476,6 +476,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defun graph-search-aux (problem strategy open-nodes closed-nodes)
+    (unless (null open-nodes)
+      (if (funcall (problem-f-goal-test problem) (car open-nodes))
+          (car open-nodes)
+          (if (or (not (member (car open-nodes) closed-nodes))
+                  (funcall (strategy-node-compare-p strategy) (car open-nodes) (car (member (car open-nodes) closed-nodes))))
+              (graph-search-aux problem 
+                                strategy 
+                                (insert-nodes-strategy (expand-node (car open-nodes) problem)
+                                                       (cdr open-nodes) 
+                                                       strategy) 
+                                (insert-nodes-strategy (list (car open-nodes))
+                                                       closed-nodes
+                                                       strategy))
+              (graph-search-aux problem strategy (cdr open-nodes) closed-nodes)))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;  Interface function for the graph search. 
@@ -498,11 +515,17 @@
 ;;    and an empty closed list.
 ;;
 (defun graph-search (problem strategy)
-  (let ((open-nodes (list (problem-initial-city problem)))
+  (let ((open-nodes (list (make-node :city (problem-initial-city problem)
+                                      :parent '() 
+                                      :action '())))
         (closed-nodes '()))
-    (unless (null open-nodes)
-      (problem-f-goal-test ))))
+    (graph-search-aux problem strategy open-nodes closed-nodes)))
 
+
+;; Solve a problem using the A* strategy
+;
+(defun a-star-search (problem)
+  (graph-search problem *A-star*))
 
 ;;
 ;; END: Exercise 9 -- Search algorithm
