@@ -256,9 +256,9 @@
   (make-problem
     :cities                 *cities*
     :initial-city           *origin*
-    :f-h                    #'f-h
-    :f-goal-test            #'f-goal-test
-    :f-search-state-equal   #'f-search-state-equal
+    :f-h                    #'(lambda (city) (f-h city *heuristic*))
+    :f-goal-test            #'(lambda (node) (f-goal-test node *destination* *mandatory*)) 
+    :f-search-state-equal   #'(lambda (node-1 node-2) (f-search-state-equal node-1 node-2 *mandatory*))
     :succ                   #'(lambda (node) (navigate node *trains*))))
 
 
@@ -304,9 +304,9 @@
              :action action 
              :depth (+ (node-depth node) 1)
              :g (+ (node-g node) (action-cost action))
-             :h (funcall (problem-f-h problem) (action-final action) *heuristic*) 
+             :h (funcall (problem-f-h problem) (action-final action)) 
              :f (+ (+ (node-g node) (action-cost action)) 
-                   (funcall (problem-f-h problem) (action-final action) *heuristic*))))
+                   (funcall (problem-f-h problem) (action-final action)))))
 
 (defun expand-node (node problem)
   (mapcar #'(lambda(x) (expand-node-action node x problem))
@@ -498,7 +498,10 @@
 ;;    and an empty closed list.
 ;;
 (defun graph-search (problem strategy)
-)
+  (let ((open-nodes (list (problem-initial-city problem)))
+        (closed-nodes '()))
+    (unless (null open-nodes)
+      (problem-f-goal-test ))))
 
 
 ;;
