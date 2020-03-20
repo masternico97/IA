@@ -495,18 +495,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;  Interface function for the graph search. 
+;;    Interface function for the graph search. 
 ;;
-;;  Input:
-;;    problem: the problem structure from which we get the general 
-;;             information (goal testing function, action operatos,
-;;             starting node, heuristic, etc.
-;;    strategy: the strategy that decide which node is the next extracted
-;;              from the open-nodes list
+;;    Input:
+;;      problem: the problem structure from which we get the general 
+;;               information (goal testing function, action operatos,
+;;               starting node, heuristic, etc.
+;;      strategy: the strategy that decide which node is the next extracted
+;;                from the open-nodes list
 ;;
 ;;    Returns:
-;;     NIL: no path to the destination nodes
-;;     If these is a path, returns the node containing the final state.
+;;      NIL: no path to the destination nodes
+;;      If these is a path, returns the node containing the final state.
 ;;
 ;;    See the graph-search-aux for the complete structure of the
 ;;    returned node. 
@@ -539,11 +539,56 @@
 ;;;
 ;*** solution-path ***
 
-(defun solution-path (node)
-)
+(defun solution-path-aux (path node)
+  (if (null node)
+      path
+      (solution-path-aux (cons (node-city node) path) (node-parent node))))
 
+(defun solution-path (node)
+  (if (null node)
+      '()
+      (solution-path-aux (list (node-city node)) (node-parent node))))
+
+
+(defun action-sequence-aux (sequence node)
+  (if (or (null node) (null (node-action node)))
+        sequence
+        (action-sequence-aux (cons (node-action node) sequence) (node-parent node))))
+
+(defun action-sequence (node)
+  (if (or (null node) (null (node-action node)))
+      '()
+      (action-sequence-aux (list (node-action node)) (node-parent node))))
 
 ;;; 
 ;;;    END Exercise 10: Solution path / action sequence
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; 
+;;;    BEGIN Exercise 11: Other search strategies
+;;;
+
+(defun depth-first-node-compare-p (node-1 node-2)
+  (>  (node-depth node-1)(node-depth node-2)))
+
+(defparameter *depth-first*
+  (make-strategy
+    :name            'depth-first
+    :node-compare-p  #'depth-first-node-compare-p))
+
+
+(defun breadth-first-node-compare-p (node-1 node-2) 
+  (<  (node-depth node-1)(node-depth node-2)))
+
+(defparameter *breadth-first*
+  (make-strategy
+    :name            'breadth-first
+    :node-compare-p  #'breadth-first-node-compare-p))
+
+;;; 
+;;;    END Exercise 11: Other search strategies
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

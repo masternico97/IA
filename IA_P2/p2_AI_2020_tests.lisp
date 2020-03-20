@@ -144,3 +144,10 @@
 (node-city (graph-search *travel* *A-star*)) ;; CALAIS
 (node-city (node-parent (graph-search *travel* *A-star*))) ;; PARIS
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;
+;; Exercise 10:
+;;
+(solution-path NIL) ;; NIL
+(solution-path (a-star-search *travel*)) ;; (MARSEILLE TOULOUSE LIMOGES ORLEANS PARIS CALAIS)
