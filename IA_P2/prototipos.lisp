@@ -227,9 +227,10 @@
 ;;    NIL: The nodes are not equivalent
 ;;
 (defun f-search-state-equal (node-1 node-2 &optional mandatory)
-  (when (equal (node-city node-1) (node-city node-2))
-        (and (f-goal-test-aux (node-parent node-1) mandatory)
-             (f-goal-test-aux (node-parent node-2) mandatory))))
+  (unless (or (null node-1) (null node-2))
+    (when (equal (node-city node-1) (node-city node-2))
+          (and (f-goal-test-aux (node-parent node-1) mandatory)
+              (f-goal-test-aux (node-parent node-2) mandatory)))))
 
 ;;
 ;; END: Exercise  -- Equal predicate for search states
@@ -309,8 +310,9 @@
                    (funcall (problem-f-h problem) (action-final action)))))
 
 (defun expand-node (node problem)
-  (mapcar #'(lambda(x) (expand-node-action node x problem))
-          (funcall (problem-succ problem) (node-city node))))
+  (unless (or (null node) (null problem))
+    (mapcar #'(lambda(x) (expand-node-action node x problem))
+            (funcall (problem-succ problem) (node-city node)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -434,13 +436,13 @@
 ;; node to be analyzed is the one with the smallest value of g+h
 ;;
 
-(defun g-leq (node-1 node-2)
-  (<=  (node-g node-1)(node-g node-2)))
+(defun f-leq (node-1 node-2)
+  (<=  (node-f node-1)(node-f node-2)))
 
 (defparameter *A-star*
   (make-strategy
     :name             'A-star                 
-    :node-compare-p   #'g-leq))
+    :node-compare-p   #'f-leq))
 ;;
 ;; END: Exercise 8 -- Definition of the A* strategy
 ;;
@@ -515,11 +517,12 @@
 ;;    and an empty closed list.
 ;;
 (defun graph-search (problem strategy)
-  (let ((open-nodes (list (make-node :city (problem-initial-city problem)
-                                      :parent '() 
-                                      :action '())))
-        (closed-nodes '()))
-    (graph-search-aux problem strategy open-nodes closed-nodes)))
+  (unless (or (null problem) (null strategy))
+    (let ((open-nodes (list (make-node :city (problem-initial-city problem)
+                                        :parent '() 
+                                        :action '())))
+          (closed-nodes '()))
+      (graph-search-aux problem strategy open-nodes closed-nodes))))
 
 
 ;; Solve a problem using the A* strategy
@@ -537,7 +540,6 @@
 ;;; 
 ;;;    BEGIN Exercise 10: Solution path
 ;;;
-;*** solution-path ***
 
 (defun solution-path-aux (path node)
   (if (null node)
