@@ -6,6 +6,9 @@
 ;;    Revised and extended: Simone Santini, 2020/02/27
 ;;                                          2019/03/07
 ;;                          Alberto Su�rez, 2018/03/23   
+;;    Done by:  Pair 02 2361
+;;              Alba Ramos
+;;              Nicolás Serrano
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
