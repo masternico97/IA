@@ -24,18 +24,18 @@
   (* (count-difference player board) (mobility player board)))
 
 (defun mix-count-mobility-3 (player board)
-  (let ((count (count-difference player board))
+  (let ((count (count-difference player board)))
         (mov (mobility player board)))
     (if (<= count 0)
         (+ count mov)
-        (* count mov)))))
+        (* count mov)))
 
 (defun mix-count-mobility-4 (player board)  ;; Peor que mix-count-mobility-3
-  (let ((count (count-difference player board))
+  (let ((count (count-difference player board)))
         (mov (mobility player board)))
     (if (<= count 0)
         mov
-        count))))
+        count))
 
 (defparameter matrix-solution-1
   '((5 0 1 1 1 1 0 5)
