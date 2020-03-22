@@ -6,6 +6,9 @@
 ;;    Revised and extended: Simone Santini, 2020/02/27
 ;;                                          2019/03/07
 ;;                          Alberto Su�rez, 2018/03/23   
+;;    Done by:  Pair 02 2361
+;;              Alba Ramos
+;;              Nicolás Serrano
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -227,9 +230,10 @@
 ;;    NIL: The nodes are not equivalent
 ;;
 (defun f-search-state-equal (node-1 node-2 &optional mandatory)
-  (when (equal (node-city node-1) (node-city node-2))
-        (and (f-goal-test-aux (node-parent node-1) mandatory)
-             (f-goal-test-aux (node-parent node-2) mandatory))))
+  (unless (or (null node-1) (null node-2))
+    (when (equal (node-city node-1) (node-city node-2))
+          (and (f-goal-test-aux (node-parent node-1) mandatory)
+              (f-goal-test-aux (node-parent node-2) mandatory)))))
 
 ;;
 ;; END: Exercise  -- Equal predicate for search states
@@ -256,10 +260,10 @@
   (make-problem
     :cities                 *cities*
     :initial-city           *origin*
-    :f-h                    #'f-h
-    :f-goal-test            #'f-goal-test
-    :f-search-state-equal   #'f-search-state-equal
-    :succ                   #'navigate))
+    :f-h                    #'(lambda (city) (f-h city *heuristic*))
+    :f-goal-test            #'(lambda (node) (f-goal-test node *destination* *mandatory*)) 
+    :f-search-state-equal   #'(lambda (node-1 node-2) (f-search-state-equal node-1 node-2 *mandatory*))
+    :succ                   #'(lambda (node) (navigate node *trains*))))
 
 
 ;;
@@ -304,13 +308,14 @@
              :action action 
              :depth (+ (node-depth node) 1)
              :g (+ (node-g node) (action-cost action))
-             :h (funcall (problem-f-h problem) (action-final action) *heuristic*) 
+             :h (funcall (problem-f-h problem) (action-final action)) 
              :f (+ (+ (node-g node) (action-cost action)) 
-                   (funcall (problem-f-h problem) (action-final action) *heuristic*))))
+                   (funcall (problem-f-h problem) (action-final action)))))
 
 (defun expand-node (node problem)
-  (mapcar #'(lambda(x) (expand-node-action node x problem))
-          (funcall (problem-succ problem) (node-city node) *trains*)))
+  (unless (or (null node) (null problem))
+    (mapcar #'(lambda(x) (expand-node-action node x problem))
+            (funcall (problem-succ problem) (node-city node)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -360,27 +365,11 @@
 ;;    node. The list is ordered with respect to the  criterion node-compare-p.
 ;; 
 (defun insert-node (node lst-nodes node-compare-p)
-Comparar de izquierda a derecha
-)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Inserts a node in an ordered list keeping the result list
-;; ordered with respect to the given comparison function
-;;
-;; Input:
-;;    node: node to be inserted in the
-;;           other list
-;;    lst-nodes: the (ordered) list of nodes in which the given nodes 
-;;               are to be inserted
-;;    node-compare-p: a function node x node --> 2 that returns T if the 
-;;                    first node comes first than the second.
-;;
-;; Returns:
-;;    An ordered list of nodes which includes the nodes of lst-nodes and 
-;;    node. The list is ordered with respect to the  criterion node-compare-p.
-;; 
-(defun insert-node (node lst-nodes node-compare-p)
-)
+  (if (null lst-nodes)
+    (list node)
+    (if (funcall node-compare-p node (car lst-nodes))
+          (cons node lst-nodes) 
+          (cons (car lst-nodes) (insert-node node (cdr lst-nodes) node-compare-p)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -401,7 +390,9 @@ Comparar de izquierda a derecha
 ;;   criterion node-compare-p.
 ;; 
 (defun insert-nodes (nodes lst-nodes node-compare-p)
-)
+  (if (null nodes)
+      lst-nodes
+      (insert-nodes (cdr nodes) (insert-node (car nodes) lst-nodes node-compare-p) node-compare-p)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -429,7 +420,7 @@ Comparar de izquierda a derecha
 ;;   use it to call insert-nodes.
 ;;
 (defun insert-nodes-strategy (nodes lst-nodes strategy)
-  )
+  (insert-nodes nodes lst-nodes (strategy-node-compare-p strategy)))
 
 
 ;;
@@ -448,13 +439,13 @@ Comparar de izquierda a derecha
 ;; node to be analyzed is the one with the smallest value of g+h
 ;;
 
-(defun g-leq (node-1 node-2)
-  (<=  (node-g node-1)(node-g node-2)))
+(defun f-leq (node-1 node-2)
+  (<=  (node-f node-1)(node-f node-2)))
 
 (defparameter *A-star*
   (make-strategy
-    name:             'A-star                 
-    node-compare-p:   #'g-leq))
+    :name             'A-star                 
+    :node-compare-p   #'f-leq))
 ;;
 ;; END: Exercise 8 -- Definition of the A* strategy
 ;;
@@ -473,4 +464,136 @@ Comparar de izquierda a derecha
 ;;;    the auxiliary function.
 ;;;
 ;;;    The auxiliary is a recursive function that extracts nodes from
-;;;    the open  :list, expands them, inserts the neighbors in the
+;;;    the open list, expands them, inserts the neighbors in the
+;;;    open-list, and the expanded node in the closed list. There is a
+;;;    caveat: with this version of the algorithm, a node can be
+;;;    inserted in the open list more than once. In this case, if we
+;;;    extract a node in the open list and the following two condition old:
+;;;
+;;;     the node we extract is already in the closed list (it has
+;;;     already been expanded)
+;;;       and
+;;;     the path estimation that we have is better than the one we
+;;;     obtain from the node in the open list
+;;;
+;;;     then we ignore the node.
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defun graph-search-aux (problem strategy open-nodes closed-nodes)
+    (unless (null open-nodes)
+      (if (funcall (problem-f-goal-test problem) (car open-nodes))
+          (car open-nodes)
+          (if (or (not (member (car open-nodes) closed-nodes))
+                  (funcall (strategy-node-compare-p strategy) (car open-nodes) (car (member (car open-nodes) closed-nodes))))
+              (graph-search-aux problem 
+                                strategy 
+                                (insert-nodes-strategy (expand-node (car open-nodes) problem)
+                                                       (cdr open-nodes) 
+                                                       strategy) 
+                                (insert-nodes-strategy (list (car open-nodes))
+                                                       closed-nodes
+                                                       strategy))
+              (graph-search-aux problem strategy (cdr open-nodes) closed-nodes)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;    Interface function for the graph search. 
+;;
+;;    Input:
+;;      problem: the problem structure from which we get the general 
+;;               information (goal testing function, action operatos,
+;;               starting node, heuristic, etc.
+;;      strategy: the strategy that decide which node is the next extracted
+;;                from the open-nodes list
+;;
+;;    Returns:
+;;      NIL: no path to the destination nodes
+;;      If these is a path, returns the node containing the final state.
+;;
+;;    See the graph-search-aux for the complete structure of the
+;;    returned node. 
+;;    This function simply prepares the data for the auxiliary
+;;    function: creates an open list with a single node (the source)
+;;    and an empty closed list.
+;;
+(defun graph-search (problem strategy)
+  (unless (or (null problem) (null strategy))
+    (let ((open-nodes (list (make-node :city (problem-initial-city problem)
+                                        :parent '() 
+                                        :action '())))
+          (closed-nodes '()))
+      (graph-search-aux problem strategy open-nodes closed-nodes))))
+
+
+;; Solve a problem using the A* strategy
+;
+(defun a-star-search (problem)
+  (graph-search problem *A-star*))
+
+;;
+;; END: Exercise 9 -- Search algorithm
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; 
+;;;    BEGIN Exercise 10: Solution path
+;;;
+
+(defun solution-path-aux (path node)
+  (if (null node)
+      path
+      (solution-path-aux (cons (node-city node) path) (node-parent node))))
+
+(defun solution-path (node)
+  (if (null node)
+      '()
+      (solution-path-aux (list (node-city node)) (node-parent node))))
+
+
+(defun action-sequence-aux (sequence node)
+  (if (or (null node) (null (node-action node)))
+        sequence
+        (action-sequence-aux (cons (node-action node) sequence) (node-parent node))))
+
+(defun action-sequence (node)
+  (if (or (null node) (null (node-action node)))
+      '()
+      (action-sequence-aux (list (node-action node)) (node-parent node))))
+
+;;; 
+;;;    END Exercise 10: Solution path / action sequence
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; 
+;;;    BEGIN Exercise 11: Other search strategies
+;;;
+
+(defun depth-first-node-compare-p (node-1 node-2)
+  (>  (node-depth node-1)(node-depth node-2)))
+
+(defparameter *depth-first*
+  (make-strategy
+    :name            'depth-first
+    :node-compare-p  #'depth-first-node-compare-p))
+
+
+(defun breadth-first-node-compare-p (node-1 node-2) 
+  (<  (node-depth node-1)(node-depth node-2)))
+
+(defparameter *breadth-first*
+  (make-strategy
+    :name            'breadth-first
+    :node-compare-p  #'breadth-first-node-compare-p))
+
+;;; 
+;;;    END Exercise 11: Other search strategies
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
